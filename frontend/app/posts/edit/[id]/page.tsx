@@ -1,25 +1,27 @@
 'use client'
 
+import { use } from 'react'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
-import PostForm from '@/components/post-form'
+import PostForm, { type PostFormValues } from '@/components/post-form'
 import { getErrorMessage } from '@/lib/api'
 import { getPost, updatePost } from '@/lib/posts'
 import { Skeleton } from '@/components/ui/skeleton'
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export default function Page({ params }: Props) {
+  const { id } = use(params)
   const router = useRouter()
   const postQuery = useQuery({
-    queryKey: ['post', params.id],
-    queryFn: () => getPost(params.id),
+    queryKey: ['post', id],
+    queryFn: () => getPost(id),
   })
 
   const mutation = useMutation({
-    mutationFn: (values: { title: string; content: string }) => updatePost(params.id, values),
+    mutationFn: (values: PostFormValues) => updatePost(id, values),
     onSuccess: () => {
       router.push('/dashboard')
     },
@@ -54,11 +56,15 @@ export default function Page({ params }: Props) {
 
   return (
     <PostForm
-      heading={`Edit post #${params.id}`}
+      heading={`Edit post #${id}`}
       submitLabel="Update"
+      description="Update this post's content and category."
+      showImageInput
+      currentImageUrl={postQuery.data.image_url ?? null}
       initialValues={{
         title: postQuery.data.title,
         content: postQuery.data.content,
+        categoryId: postQuery.data.category_id,
       }}
       isSubmitting={mutation.isPending}
       error={mutation.error ? getErrorMessage(mutation.error) : null}

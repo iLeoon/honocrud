@@ -19,6 +19,9 @@ export default function Page() {
     <PostForm
       heading="Create post"
       submitLabel="Create"
+      description="Create a new post and assign it to a category."
+      showImageInput
+      imageRequired
       isSubmitting={mutation.isPending}
       error={mutation.error ? getErrorMessage(mutation.error) : null}
       onSubmit={async (values) => {
